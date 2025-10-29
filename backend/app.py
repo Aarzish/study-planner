@@ -49,6 +49,54 @@ def add_course():
     session.close()
     return jsonify(result), 201
 
+#Add a new topic
+@app.route("/topics", methods=["POST"])
+def add_topic():
+    data = request.get_json()
+    name = data.get("name")
+    estimated_difficulty = data.get("estimated_difficulty")
+    days_until_deadline = data.get("days_until_deadline")
+    course_id = data.get("course_id")
+
+    if not all([name, estimated_difficulty, days_until_deadline, course_id]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    session = Session()
+    new_topic = Topic(
+        name=name,
+        estimated_difficulty=estimated_difficulty,
+        days_until_deadline=days_until_deadline,
+        course_id=course_id
+    )
+    session.add(new_topic)
+    session.commit()
+    result = {
+        "id": new_topic.id,
+        "name": new_topic.name,
+        "estimated_difficulty": new_topic.estimated_difficulty,
+        "days_until_deadline": new_topic.days_until_deadline,
+        "course_id": new_topic.course_id
+    }
+    session.close()
+    return jsonify(result), 201
+
+#Get all topics for a specific course
+@app.route("/courses/<int:course_id>/topics", methods=["GET"])
+def get_topics(course_id):
+    sessiom = Session()
+    topics = sessiom.query(Topic).filter(Topic.course_id == course_id).all()
+    result = []
+    for topic in topics:
+        topic_data = {
+            "id": topic.id,
+            "name": topic.name,
+            "estimated_difficulty": topic.estimated_difficulty,
+            "days_until_deadline": topic.days_until_deadline,
+            "course_id": topic.course_id
+        }
+        result.append(topic_data)
+    sessiom.close()
+    return jsonify(result)
 
 # Allocates study time
 @app.route("/allocate_time", methods=["POST"])
