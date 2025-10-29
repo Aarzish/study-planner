@@ -98,6 +98,7 @@ def get_topics(course_id):
     sessiom.close()
     return jsonify(result)
 
+
 # Allocates study time
 @app.route("/allocate_time", methods=["POST"])
 def allocate_study_time():
@@ -125,6 +126,56 @@ def allocate_study_time():
 
     return jsonify({"allocations": result})
 
+#Log the study session
+@app.route("/study_sessions", methods=["POST"])
+def log_study_session():
+    data = request.get_json()
+    topic_id = data.get("topic_id")
+    duration_minutes = data.get("duration_minutes")
+    completed = data.get("completed", False)
+    confidence_level = data.get("confidence_level",0.0)
+
+    if not all([topic_id, duration_minutes]):
+        return jsonify({"error": "topic_id and duration_minutes are required"}), 400
+
+    session = Session()
+    new_session = StudySession(
+        topic_id=topic_id,
+        duration_minutes=duration_minutes,
+        completed=completed,
+        confidnece_level=confidence_level
+    )
+    session.add(new_session)
+    session.commit()
+    result = {
+        "id": new_session.id,
+        "topic_id": new_session.topic_id,
+        "start_time": new_session.start_time,
+        "duration_minutes": new_session.duration_minutes,
+        "completed": new_session.completed,
+        "confidence_level": new_session.confidnece_level
+    }
+    session.close()
+    return jsonify(result), 201
+
+#Get all study sessions
+@app.route("/study_sessions", methods=["GET"])
+def get_study_sessions():
+    session = Session()
+    sessions = session.query(StudySession).all()
+    result = []
+    for s in sessions:
+        session_data = {
+            "id": s.id,
+            "topic_id": s.topic_id,
+            "start_time": s.start_time,
+            "duration_minutes": s.duration_minutes,
+            "completed": s.completed,
+            "confidence_level": s.confidnece_level
+        }
+        result.append(session_data)
+    session.close()
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)
