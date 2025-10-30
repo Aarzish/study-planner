@@ -4,6 +4,7 @@ function App() {
   const [courses, setCourses] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [removeMode, setRemoveMode] = useState(true);
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/courses")
@@ -28,6 +29,23 @@ function App() {
     }
   };
 
+  const deleteCourse = async (id) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:5000/courses/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Failed to delete course");
+
+    // Remove it from frontend state
+    setCourses(courses.filter((course) => course.id !== id));
+  } catch (error) {
+    console.error(error);
+    alert("Error deleting course");
+  }
+};
+
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Study Planner</h1>
@@ -46,13 +64,32 @@ function App() {
         onChange={(e) => setDescription(e.target.value)}
       />
       <button onClick={addCourse}>Add</button>
+      <button
+  onClick={() => setRemoveMode(!removeMode)}
+  style={{
+    backgroundColor: removeMode ? "red" : "gray",
+    color: "white",
+    marginLeft: "10px",
+  }}
+>
+  {removeMode ? "Cancel Remove" : "Remove Course"}
+</button>
+
 
       <h2>Courses</h2>
-      <ul>
-        {courses.map((c) => (
-          <li key={c.id}>{c.name} - {c.description}</li>
-        ))}
-      </ul>
+     <ul>
+  {courses.map((course) => (
+    <li key={course.id}>
+      {course.name}
+      {removeMode && (
+        <button onClick={() => deleteCourse(course.id)} style={{ marginLeft: "10px", color: "red" }}>
+          ❌
+        </button>
+      )}
+    </li>
+  ))}
+</ul>
+
     </div>
   );
 }
