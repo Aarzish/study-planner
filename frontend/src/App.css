@@ -81,3 +81,93 @@ ul {
 .remove-btn:hover {
   background: #c9302c;
 }
+
+/* Calendar adjustments */
+.react-calendar__tile {
+  color: black !important;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #888 !important;
+}
+
+.react-calendar__navigation button {
+  color: black !important;
+}
+
+.react-calendar__navigation button:disabled {
+  color: #999 !important;
+}
+
+.react-calendar__navigation button:hover {
+  background-color: #e6e6e6 !important;
+}
+
+/* Highlight days with events */
+.has-event {
+  background-color: #ffe066 !important;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.has-event:hover {
+  background: #fddb27 !important;
+}
+
+/* Highlight current day */
+.react-calendar__tile--now {
+  background: #4a90e2 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+/* SIDE-BY-SIDE LAYOUT */
+.layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  gap: 30px;
+
+  left: -160px; /* shifts whole layout right to balance sidebar */
+}
+
+/* Sidebar panel */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+
+  position: relative;
+  left: -100px; /* positions sidebar left */
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  background: #f7f7f7;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.sidebar li strong {
+  font-size: 15px;
+}
+
+/* Main content centered */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centers cards + title */
+  width: 100%;
+}
