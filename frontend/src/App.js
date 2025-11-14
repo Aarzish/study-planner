@@ -55,12 +55,22 @@ function App() {
   };
 
   const removeCourse = async (id) => {
-    await fetch(`http://127.0.0.1:5000/courses/${id}`, {
-      method: "DELETE",
-    });
+  await fetch(`http://127.0.0.1:5000/courses/${id}`, {
+    method: "DELETE",
+  });
 
-    setCourses(courses.filter((c) => c.id !== id));
-  };
+  setCourses(courses.filter((c) => c.id !== id));
+};
+
+const removeEvent = async (id) => {
+  await fetch(`http://127.0.0.1:5000/events/${id}`, {
+    method: "DELETE",
+  });
+
+  // Update both events (for selected date) and allEvents (for sidebar + highlights)
+  setEvents(events.filter((evt) => evt.id !== id));
+  setAllEvents(allEvents.filter((evt) => evt.id !== id));
+};
 
   const handleDateClick = (selectedDate) => {
     setDate(selectedDate);
@@ -108,14 +118,22 @@ function App() {
         {upcomingEvents.length === 0 && <p>No upcoming events.</p>}
 
         <ul>
-          {upcomingEvents.map((evt) => (
-            <li key={evt.id}>
-              <strong>{evt.title}</strong>
-              <br />
-              <span style={{ color: "#555" }}>{evt.date}</span>
-            </li>
-          ))}
-        </ul>
+  {upcomingEvents.map((evt) => (
+    <li key={evt.id} className="course-item">
+      <div>
+        <strong>{evt.title}</strong>
+        <br />
+        <span style={{ color: "#555" }}>{evt.date}</span>
+      </div>
+      <button
+        className="remove-btn"
+        onClick={() => removeEvent(evt.id)}
+      >
+        Remove
+      </button>
+    </li>
+  ))}
+</ul>
       </div>
 
       {/* MAIN CONTENT */}
