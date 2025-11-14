@@ -171,3 +171,17 @@ ul {
   align-items: center; /* centers cards + title */
   width: 100%;
 }
+
+.clear-btn {
+  background: #6c757d;   /* grey background */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.clear-btn:hover {
+  background: #5a6268;   /* darker grey on hover */
+}

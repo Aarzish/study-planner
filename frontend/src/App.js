@@ -55,22 +55,22 @@ function App() {
   };
 
   const removeCourse = async (id) => {
-  await fetch(`http://127.0.0.1:5000/courses/${id}`, {
-    method: "DELETE",
-  });
+    await fetch(`http://127.0.0.1:5000/courses/${id}`, {
+      method: "DELETE",
+    });
 
-  setCourses(courses.filter((c) => c.id !== id));
-};
+    setCourses(courses.filter((c) => c.id !== id));
+  };
 
-const removeEvent = async (id) => {
-  await fetch(`http://127.0.0.1:5000/events/${id}`, {
-    method: "DELETE",
-  });
+  const removeEvent = async (id) => {
+    await fetch(`http://127.0.0.1:5000/events/${id}`, {
+      method: "DELETE",
+    });
 
-  // Update both events (for selected date) and allEvents (for sidebar + highlights)
-  setEvents(events.filter((evt) => evt.id !== id));
-  setAllEvents(allEvents.filter((evt) => evt.id !== id));
-};
+    // Update both events (for selected date) and allEvents (for sidebar + highlights)
+    setEvents(events.filter((evt) => evt.id !== id));
+    setAllEvents(allEvents.filter((evt) => evt.id !== id));
+  };
 
   const handleDateClick = (selectedDate) => {
     setDate(selectedDate);
@@ -108,9 +108,14 @@ const removeEvent = async (id) => {
   // Highlight dates on calendar
   const highlightDates = allEvents.map((e) => e.date);
 
+  // Delete all past events
+  const deletePastEvents = async () => {
+    await fetch("http://127.0.0.1:5000/events/past", { method: "DELETE" });
+    fetchEventsForDate(date); // refresh events
+  };
+
   return (
     <div className="layout">
-
       {/* LEFT SIDEBAR */}
       <div className="sidebar">
         <h2>Upcoming Events</h2>
@@ -118,22 +123,27 @@ const removeEvent = async (id) => {
         {upcomingEvents.length === 0 && <p>No upcoming events.</p>}
 
         <ul>
-  {upcomingEvents.map((evt) => (
-    <li key={evt.id} className="course-item">
-      <div>
-        <strong>{evt.title}</strong>
-        <br />
-        <span style={{ color: "#555" }}>{evt.date}</span>
-      </div>
-      <button
-        className="remove-btn"
-        onClick={() => removeEvent(evt.id)}
-      >
-        Remove
+          {upcomingEvents.map((evt) => (
+            <li key={evt.id} className="course-item">
+              <div>
+                <strong>{evt.title}</strong>
+                <br />
+                <span style={{ color: "#555" }}>{evt.date}</span>
+              </div>
+              <button
+                className="remove-btn"
+                onClick={() => removeEvent(evt.id)}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Button to clear past events */}
+       <button className="clear-btn" onClick={deletePastEvents}>
+          Clear Past Events
       </button>
-    </li>
-  ))}
-</ul>
       </div>
 
       {/* MAIN CONTENT */}
@@ -188,9 +198,17 @@ const removeEvent = async (id) => {
           <Calendar
             onClickDay={handleDateClick}
             value={date}
-            tileClassName={({ date }) => {
+            tileClassName={({ date, view }) => {
               const dateStr = date.toISOString().split("T")[0];
-              return highlightDates.includes(dateStr) ? "has-event" : null;
+              const classes = [];
+
+              // Add custom event highlight
+              if (highlightDates.includes(dateStr)) {
+                classes.push("has-event");
+              }
+
+              // Return combined classes so react-calendar keeps its defaults
+              return classes.join(" ");
             }}
           />
 
