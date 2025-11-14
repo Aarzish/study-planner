@@ -1,0 +1,83 @@
+/* Center everything */
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Titles */
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+/* Card layout */
+.card {
+  background: #ffffff;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Input row */
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Buttons */
+button {
+  padding: 10px 15px;
+  background: #4a90e2;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #357abd;
+}
+
+/* Course list */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+
+.course-item p {
+  margin: 4px 0 0 0;
+  color: #555;
+}
+
+.remove-btn {
+  background: #d9534f;
+}
+
+.remove-btn:hover {
+  background: #c9302c;
+}
