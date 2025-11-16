@@ -12,21 +12,27 @@ function App() {
   const [events, setEvents] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [eventTitle, setEventTitle] = useState("");
+  const [reminder, setReminder] = useState("none");
 
   // Fetch events for selected date + all events
   const fetchEventsForDate = async (selectedDate) => {
     const dateStr = selectedDate.toISOString().split("T")[0];
 
-    // Events for selected date
     const response = await fetch(`http://127.0.0.1:5000/events/${dateStr}`);
     const data = await response.json();
     setEvents(data);
 
-    // Fetch ALL events (with titles + dates)
     const allResponse = await fetch("http://127.0.0.1:5000/events");
     const allData = await allResponse.json();
     setAllEvents(allData);
   };
+
+  // Ask for browser notification permission
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
 
   // Fetch initial courses + events
   useEffect(() => {
@@ -67,7 +73,6 @@ function App() {
       method: "DELETE",
     });
 
-    // Update both events (for selected date) and allEvents (for sidebar + highlights)
     setEvents(events.filter((evt) => evt.id !== id));
     setAllEvents(allEvents.filter((evt) => evt.id !== id));
   };
@@ -75,6 +80,34 @@ function App() {
   const handleDateClick = (selectedDate) => {
     setDate(selectedDate);
     fetchEventsForDate(selectedDate);
+  };
+
+  // Reminder Scheduling Logic
+  const scheduleReminder = (dateStr, title, reminderType) => {
+    if (reminderType === "none") return;
+
+    const eventDate = new Date(dateStr);
+    let notifyTime = new Date(eventDate);
+
+    if (reminderType === "day") {
+      notifyTime.setHours(9, 0, 0);
+    } else {
+      notifyTime.setDate(notifyTime.getDate() - parseInt(reminderType));
+      notifyTime.setHours(9, 0, 0);
+    }
+
+    const timeout = notifyTime - Date.now();
+
+    if (timeout > 0) {
+      setTimeout(() => {
+        if (Notification.permission === "granted") {
+          new Notification("Study Planner Reminder", {
+            body: `${title} is coming up!`,
+            icon: "/favicon.ico",
+          });
+        }
+      }, timeout);
+    }
   };
 
   const addEvent = async () => {
@@ -90,12 +123,16 @@ function App() {
 
     const newEvent = await response.json();
 
-    setEvents([...events, newEvent]); // for selected date view
-    setAllEvents([...allEvents, newEvent]); // for sidebar + highlight
+    setEvents([...events, newEvent]);
+    setAllEvents([...allEvents, newEvent]);
+
+    // Schedule the reminder
+    scheduleReminder(dateStr, eventTitle, reminder);
+
     setEventTitle("");
+    setReminder("none");
   };
 
-  // Compute upcoming future events (sorted)
   const upcomingEvents = allEvents
     .filter((evt) => {
       const eventDate = new Date(evt.date);
@@ -105,13 +142,11 @@ function App() {
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Highlight dates on calendar
   const highlightDates = allEvents.map((e) => e.date);
 
-  // Delete all past events
   const deletePastEvents = async () => {
     await fetch("http://127.0.0.1:5000/events/past", { method: "DELETE" });
-    fetchEventsForDate(date); // refresh events
+    fetchEventsForDate(date);
   };
 
   return (
@@ -130,20 +165,16 @@ function App() {
                 <br />
                 <span style={{ color: "#555" }}>{evt.date}</span>
               </div>
-              <button
-                className="remove-btn"
-                onClick={() => removeEvent(evt.id)}
-              >
+              <button className="remove-btn" onClick={() => removeEvent(evt.id)}>
                 Remove
               </button>
             </li>
           ))}
         </ul>
 
-        {/* Button to clear past events */}
-       <button className="clear-btn" onClick={deletePastEvents}>
+        <button className="clear-btn" onClick={deletePastEvents}>
           Clear Past Events
-      </button>
+        </button>
       </div>
 
       {/* MAIN CONTENT */}
@@ -198,16 +229,12 @@ function App() {
           <Calendar
             onClickDay={handleDateClick}
             value={date}
-            tileClassName={({ date, view }) => {
+            tileClassName={({ date }) => {
               const dateStr = date.toISOString().split("T")[0];
               const classes = [];
-
-              // Add custom event highlight
               if (highlightDates.includes(dateStr)) {
                 classes.push("has-event");
               }
-
-              // Return combined classes so react-calendar keeps its defaults
               return classes.join(" ");
             }}
           />
@@ -219,6 +246,19 @@ function App() {
               value={eventTitle}
               onChange={(e) => setEventTitle(e.target.value)}
             />
+
+            <select
+              value={reminder}
+              onChange={(e) => setReminder(e.target.value)}
+              className="reminder-select"
+            >
+              <option value="none">No reminder</option>
+              <option value="day">On the day</option>
+              <option value="1">1 day before</option>
+              <option value="3">3 days before</option>
+              <option value="7">1 week before</option>
+            </select>
+
             <button onClick={addEvent}>Add Event</button>
           </div>
 

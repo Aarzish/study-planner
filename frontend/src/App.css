@@ -7,17 +7,20 @@ body {
 
 /* Center everything */
 .container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 40px auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  padding: 10px;
 }
+
 
 /* Titles */
 h1 {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  font-size: 2.2rem;
+  color: #5a31a6; /* deep purple */
 }
+
 
 h2 {
   margin-bottom: 15px;
@@ -49,19 +52,26 @@ input {
   flex: 1;
   padding: 10px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #bbb;
+  background: #fafafa;
 }
+
 
 /* Buttons */
 button {
-  padding: 10px 15px;
-  background: #4a90e2;
+  padding: 10px 16px;
+  background: #7f56d9; /* purple button */
   border: none;
   color: white;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.25s;
 }
+
+button:hover {
+  background: #6941c6;
+}
+
 
 button:hover {
   background: #357abd;
@@ -124,9 +134,13 @@ ul {
   font-weight: bold;
 }
 
-.has-event:hover {
-  background: #fddb27 !important;
+.has-event {
+  background: #fff2a8 !important; /* soft yellow */
+  color: #000 !important;
+  border-radius: 50% !important;
+  font-weight: bold;
 }
+
 
 /* Highlight current day */
 .react-calendar__tile--now {
@@ -198,4 +212,11 @@ ul {
 
 .clear-btn:hover {
   background: #5a6268;   /* darker grey on hover */
+}
+
+.reminder-select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
 }
