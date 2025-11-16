@@ -3,6 +3,8 @@ import "./App.css";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
+const API_BASE = "http://127.0.0.1:5000";
+
 function App() {
   const [courseName, setCourseName] = useState("");
   const [description, setDescription] = useState("");
@@ -14,44 +16,108 @@ function App() {
   const [eventTitle, setEventTitle] = useState("");
   const [reminder, setReminder] = useState("none");
 
-  // Fetch events for selected date + all events
-  const fetchEventsForDate = async (selectedDate) => {
-    const dateStr = selectedDate.toISOString().split("T")[0];
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-    const response = await fetch(`http://127.0.0.1:5000/events/${dateStr}`);
-    const data = await response.json();
-    setEvents(data);
+  const login = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
 
-    const allResponse = await fetch("http://127.0.0.1:5000/events");
-    const allData = await allResponse.json();
-    setAllEvents(allData);
+      const data = await response.json();
+      if (data.token) {
+        setToken(data.token);
+        localStorage.setItem("token", data.token);
+      } else {
+        alert("Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Could not connect to server");
+    }
   };
 
-  // Ask for browser notification permission
+  const register = async () => {
+    const response = await fetch(`${API_BASE}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Registration successful! You can now log in.");
+    } else {
+      alert(data.error || "Registration failed");
+    }
+  };
+
+  const logout = () => {
+    setToken("");
+    localStorage.removeItem("token");
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/courses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setCourses(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch courses:", err);
+      setCourses([]);
+    }
+  };
+  const fetchEventsForDate = async (selectedDate) => {
+    const dateStr = selectedDate.toISOString().split("T")[0];
+  try {
+    const response = await fetch(`${API_BASE}/events/${dateStr}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await response.json();
+    setEvents(Array.isArray(data) ? data : []);
+
+    const allResponse = await fetch(`${API_BASE}/events`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const allData = await allResponse.json();
+    setAllEvents(Array.isArray(allData) ? allData : []);
+  } catch (err) {
+    console.error("Failed to fetch events:", err);
+    setEvents([]);
+    setAllEvents([]);
+  }
+};
+
   useEffect(() => {
     if ("Notification" in window) {
       Notification.requestPermission();
     }
   }, []);
 
-  // Fetch initial courses + events
   useEffect(() => {
-    const fetchCourses = async () => {
-      const response = await fetch("http://127.0.0.1:5000/courses");
-      const data = await response.json();
-      setCourses(data);
-    };
-    fetchCourses();
-    fetchEventsForDate(date);
-  }, []);
+    if (token) {
+      fetchCourses();
+      fetchEventsForDate(date);
+    }
+  }, [token]);
 
   const addCourse = async () => {
     if (!courseName.trim()) return;
 
-    const response = await fetch("http://127.0.0.1:5000/courses", {
+    const response = await fetch(`${API_BASE}/courses`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: courseName, description }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: courseName, description })
     });
 
     const data = await response.json();
@@ -61,16 +127,18 @@ function App() {
   };
 
   const removeCourse = async (id) => {
-    await fetch(`http://127.0.0.1:5000/courses/${id}`, {
+    await fetch(`${API_BASE}/courses/${id}`, {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     setCourses(courses.filter((c) => c.id !== id));
   };
 
   const removeEvent = async (id) => {
-    await fetch(`http://127.0.0.1:5000/events/${id}`, {
+    await fetch(`${API_BASE}/events/${id}`, {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     setEvents(events.filter((evt) => evt.id !== id));
@@ -82,7 +150,6 @@ function App() {
     fetchEventsForDate(selectedDate);
   };
 
-  // Reminder Scheduling Logic
   const scheduleReminder = (dateStr, title, reminderType) => {
     if (reminderType === "none") return;
 
@@ -103,7 +170,7 @@ function App() {
         if (Notification.permission === "granted") {
           new Notification("Study Planner Reminder", {
             body: `${title} is coming up!`,
-            icon: "/favicon.ico",
+            icon: "/favicon.ico"
           });
         }
       }, timeout);
@@ -115,10 +182,13 @@ function App() {
 
     const dateStr = date.toISOString().split("T")[0];
 
-    const response = await fetch("http://127.0.0.1:5000/events", {
+    const response = await fetch(`${API_BASE}/events`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: eventTitle, date: dateStr }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ title: eventTitle, date: dateStr })
     });
 
     const newEvent = await response.json();
@@ -126,7 +196,6 @@ function App() {
     setEvents([...events, newEvent]);
     setAllEvents([...allEvents, newEvent]);
 
-    // Schedule the reminder
     scheduleReminder(dateStr, eventTitle, reminder);
 
     setEventTitle("");
@@ -145,18 +214,45 @@ function App() {
   const highlightDates = allEvents.map((e) => e.date);
 
   const deletePastEvents = async () => {
-    await fetch("http://127.0.0.1:5000/events/past", { method: "DELETE" });
+    await fetch(`${API_BASE}/events/past`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
     fetchEventsForDate(date);
   };
 
+  if (!token) {
+    return (
+      <div className="auth-container">
+        <h1>Study Planner Login</h1>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <div className="input-row">
+          <button onClick={login}>Login</button>
+          <button onClick={register}>Register</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="layout">
+      <button onClick={logout} className="logout-btn">Logout</button>
+
       {/* LEFT SIDEBAR */}
       <div className="sidebar">
         <h2>Upcoming Events</h2>
-
         {upcomingEvents.length === 0 && <p>No upcoming events.</p>}
-
         <ul>
           {upcomingEvents.map((evt) => (
             <li key={evt.id} className="course-item">
@@ -171,7 +267,6 @@ function App() {
             </li>
           ))}
         </ul>
-
         <button className="clear-btn" onClick={deletePastEvents}>
           Clear Past Events
         </button>
@@ -201,7 +296,7 @@ function App() {
           </div>
         </div>
 
-        {/* Course List */}
+                {/* Course List */}
         <div className="card">
           <h2>Courses</h2>
           {courses.length === 0 && <p>No courses yet.</p>}
@@ -222,7 +317,6 @@ function App() {
             ))}
           </ul>
         </div>
-
         {/* Calendar Section */}
         <div className="card">
           <h2>Calendar</h2>
@@ -266,9 +360,10 @@ function App() {
             Events on {date.toDateString()}:
           </h3>
           <ul>
-            {events.map((evt) => (
+            {Array.isArray(events) &&
+              events.map((evt) => (
               <li key={evt.id}>{evt.title}</li>
-            ))}
+              ))}
           </ul>
         </div>
       </div>
