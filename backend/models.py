@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Foreig
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import datetime
+from pathlib import Path
 
 Base = declarative_base()
 
@@ -34,5 +35,13 @@ class StudySession(Base):
 
     topic = relationship("Topic")
 
-engine = create_engine("sqlite:///data/study_data.sqlite", echo=True)
+class Event(Base):
+    __tablename__ = 'events'
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    date = Column(String, nullable=False)  # Store as 'YYYY-MM-DD'
+
+    
+db_path = Path(__file__).resolve().parent.parent / "data" / "study_data.sqlite"
+engine = create_engine("sqlite:///../data/study_data.sqlite", connect_args={"check_same_thread": False})
 Base.metadata.create_all(engine)

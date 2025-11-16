@@ -1,3 +1,10 @@
+body {
+  background: #f3e8ff; /* light purple */
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
 /* Center everything */
 .container {
   max-width: 600px;
@@ -19,10 +26,17 @@ h2 {
 /* Card layout */
 .card {
   background: #ffffff;
-  padding: 20px;
-  margin-bottom: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  margin: 25px auto;
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
 }
 
 /* Input row */
